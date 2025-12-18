@@ -30,6 +30,7 @@
             -moz-osx-font-smoothing: grayscale;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         body {
@@ -37,7 +38,8 @@
             color: var(--text-primary);
             font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
             overflow: hidden;
-            height: 100vh;
+            /* Фикс для iOS Safari: используем динамические единицы высоты */
+            height: 100dvh;
             width: 100vw;
             display: flex;
             align-items: center;
@@ -197,18 +199,6 @@
             overflow: hidden;
         }
 
-        /* Glass Shine Effect */
-        .main-card::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
-            transform: rotate(45deg);
-            pointer-events: none;
-        }
-
-        /* Step Engine UI */
         .progress-engine {
             display: flex;
             gap: 8px;
@@ -233,7 +223,6 @@
             transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Node Content Animation */
         .step-node {
             display: none;
             opacity: 0;
@@ -264,7 +253,6 @@
             min-height: 50px;
         }
 
-        /* Video System (High Fidelity) */
         .video-container {
             width: 100%;
             aspect-ratio: 9/16;
@@ -320,9 +308,6 @@
             transition: 0.3s var(--easing);
         }
 
-        .btn-replay:hover { transform: scale(1); }
-
-        /* Navigation Button */
         .btn-navigation {
             width: 100%;
             padding: 24px;
@@ -361,9 +346,6 @@
             line-height: 1.8;
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* SCROLLBAR & UTILS                                                          */
-        /* -------------------------------------------------------------------------- */
         ::-webkit-scrollbar { display: none; }
         
     </style>
@@ -388,32 +370,26 @@
         <div class="main-card" id="parallax-card">
             <div class="progress-engine" id="step-indicators"></div>
 
-            <div id="nodes-container">
-                </div>
+            <div id="nodes-container"></div>
 
             <button class="btn-navigation" id="nav-trigger" onclick="handleNavigation()">ПРОДОЛЖИТЬ</button>
 
             <div class="guide-footer">
-                бык тубогуб тубогубенький бычок <br>
-                AASPEKT SECURE PROTOCOL v4.0.1 <br>
-                Support: @zarub_support_bot
+                БЫК ТУБОГУБ ТУБОГУБЕНЬКИЙ БЫЧОК <br>
+                AASPEKT SECURE PROTOCOL v5.0.0 <br>
+                SUPPORT: @zarub_support_bot
             </div>
         </div>
     </div>
 
     <script>
-        /**
-         * --------------------------------------------------------------------------
-         * SYSTEM CONFIGURATION
-         * --------------------------------------------------------------------------
-         */
         const APP_DATA = [
-            { id: 0, title: "01. VPN Конфиг", desc: "Врубай VPN, без него Apple заблочит соединение с сервером выпуска.", video: "video1.mp4" },
-            { id: 1, title: "02. Авторизация", desc: "Прыгай в @zarub_robot и активируй свою сессию кнопкой Старт.", video: "video2.mp4" },
-            { id: 2, title: "03. Баланс $3", desc: "Закинь 3 бакса — это комиссия системы за выпуск твоей карты.", video: "video3.mp4" },
-            { id: 3, title: "04. Выпуск Карты", desc: "Выбирай 'Apple Pay Virtual' — реквизиты прилетят мгновенно.", video: "video4.mp4" },
-            { id: 4, title: "05. Активация $10", desc: "Пополни саму карту на 10$, чтобы Apple Wallet успешно её верифицировал.", video: "video5.mp4" },
-            { id: 5, title: "06. Готово к оплате", desc: "Привязывай в Wallet и плати где угодно. Ты в игре.", video: "video6.mp4" }
+            { id: 0, title: "01. VPN Соединение", desc: "Активируй VPN. Это обязательное условие для обхода региональных фильтров Apple.", video: "video1.mp4" },
+            { id: 1, title: "02. Авторизация", desc: "Перейди в @zarub_robot и нажми 'Старт' для запуска процесса генерации данных.", video: "video2.mp4" },
+            { id: 2, title: "03. Инициализация", desc: "Пополни баланс на $3. Это техническая комиссия за выпуск новой виртуальной карты.", video: "video3.mp4" },
+            { id: 3, title: "04. Генерация Карты", desc: "Выбери 'Apple Pay Virtual'. Твои уникальные реквизиты появятся в чате моментально.", video: "video4.mp4" },
+            { id: 4, title: "05. Активация Лимитов", desc: "Пополни карту на $10. Минимальный депозит необходим для успешной верификации в Wallet.", video: "video5.mp4" },
+            { id: 5, title: "06. Финальный Этап", desc: "Привяжи реквизиты к Apple Wallet. Теперь бесконтактная оплата снова доступна.", video: "video6.mp4" }
         ];
 
         let internalState = {
@@ -425,11 +401,6 @@
             isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         };
 
-        /**
-         * --------------------------------------------------------------------------
-         * PHYSICS ENGINE (RAIN & PARTICLES)
-         * --------------------------------------------------------------------------
-         */
         const canvas = document.getElementById('viewport-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -457,7 +428,6 @@
         function renderAtmosphere() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.lineCap = 'round';
-            
             particles.forEach(p => {
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity})`;
@@ -465,27 +435,16 @@
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(p.x, p.y + p.length);
                 ctx.stroke();
-
                 p.y += p.speed;
-                if (p.y > canvas.height) {
-                    p.y = -p.length;
-                    p.x = Math.random() * canvas.width;
-                }
+                if (p.y > canvas.height) { p.y = -p.length; p.x = Math.random() * canvas.width; }
             });
             requestAnimationFrame(renderAtmosphere);
         }
 
-        /**
-         * --------------------------------------------------------------------------
-         * UI CONSTRUCTION
-         * --------------------------------------------------------------------------
-         */
         function assembleInterface() {
             const nodeWrap = document.getElementById('nodes-container');
             const stepWrap = document.getElementById('step-indicators');
-
             APP_DATA.forEach((data, i) => {
-                // UI Nodes
                 const node = document.createElement('div');
                 node.className = `step-node ${i === 0 ? 'active' : ''}`;
                 node.id = `step-node-${i}`;
@@ -493,47 +452,28 @@
                     <h2 class="step-title">${data.title}</h2>
                     <p class="step-description">${data.desc}</p>
                     <div class="video-container">
-                        <video id="vid-${i}" playsinline muted webkit-playsinline preload="auto" loop>
+                        <video id="vid-${i}" playsinline muted preload="auto" loop x5-video-player-type="h5">
                             <source src="${data.video}" type="video/mp4">
                         </video>
                         <div class="video-overlay"></div>
                         <div class="replay-control" id="replay-${i}">
-                            <button class="btn-replay" onclick="forceReplay(${i})">СМОТРЕТЬ ЕЩЕ РАЗ</button>
+                            <button class="btn-replay" onclick="forceReplay(${i})">ПОВТОРИТЬ</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 nodeWrap.appendChild(node);
-
-                // Progress Segments
                 const seg = document.createElement('div');
                 seg.className = 'segment';
                 seg.innerHTML = `<div class="segment-fill" id="fill-${i}"></div>`;
                 stepWrap.appendChild(seg);
-
-                // Video End State
                 const v = document.getElementById(`vid-${i}`);
-                v.onended = () => {
-                    document.getElementById(`replay-${i}`).style.display = 'flex';
-                };
+                v.onended = () => { document.getElementById(`replay-${i}`).style.display = 'flex'; };
             });
         }
 
-        /**
-         * --------------------------------------------------------------------------
-         * SENSORS & INTERACTION (GYRO + MOUSE)
-         * --------------------------------------------------------------------------
-         */
         function initSecurityCore() {
-            // Request Gyro for iOS
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
-                    .then(state => {
-                        if (state === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            internalState.gyroActive = true;
-                        }
-                        transitionToApp();
-                    })
+                    .then(res => { if (res === 'granted') { window.addEventListener('deviceorientation', handleOrientation); internalState.gyroActive = true; } transitionToApp(); })
                     .catch(() => transitionToApp());
             } else {
                 window.addEventListener('deviceorientation', handleOrientation);
@@ -542,105 +482,62 @@
         }
 
         function handleOrientation(e) {
-            // Beta: -180 to 180 (X-axis), Gamma: -90 to 90 (Y-axis)
             internalState.rotation.targetX = Math.max(Math.min(e.beta - 45, 30), -30) / 1.5;
             internalState.rotation.targetY = Math.max(Math.min(e.gamma, 30), -30) / 1.5;
         }
 
         document.addEventListener('mousemove', (e) => {
             if (internalState.isMobile) return;
-            internalState.mouse.x = e.clientX;
-            internalState.mouse.y = e.clientY;
-
             const glow = document.getElementById('cursor-glow');
-            glow.style.left = `${e.clientX}px`;
-            glow.style.top = `${e.clientY}px`;
-
+            glow.style.left = `${e.clientX}px`; glow.style.top = `${e.clientY}px`;
             internalState.rotation.targetX = (window.innerHeight / 2 - e.clientY) / 15;
             internalState.rotation.targetY = (e.clientX - window.innerWidth / 2) / 15;
         });
 
-        // Touch support for Glow
-        document.addEventListener('touchmove', (e) => {
-            const glow = document.getElementById('cursor-glow');
-            glow.style.left = `${e.touches[0].clientX}px`;
-            glow.style.top = `${e.touches[0].clientY}px`;
-        });
-
         function updateKinetics() {
-            // Smooth Interpolation (LERP)
             internalState.rotation.x += (internalState.rotation.targetX - internalState.rotation.x) * 0.1;
             internalState.rotation.y += (internalState.rotation.targetY - internalState.rotation.y) * 0.1;
-
             const card = document.getElementById('parallax-card');
-            card.style.transform = `rotateX(${internalState.rotation.x}deg) rotateY(${internalState.rotation.y}deg)`;
-            
+            if(card) card.style.transform = `rotateX(${internalState.rotation.x}deg) rotateY(${internalState.rotation.y}deg)`;
             requestAnimationFrame(updateKinetics);
         }
 
-        /**
-         * --------------------------------------------------------------------------
-         * NAVIGATION & STATE ENGINE
-         * --------------------------------------------------------------------------
-         */
         function transitionToApp() {
             const intro = document.getElementById('intro-scene');
             const main = document.getElementById('guide-interface');
-
             intro.style.opacity = '0';
             intro.style.transform = 'translateY(-60px) scale(0.9)';
-
             setTimeout(() => {
-                intro.style.display = 'none';
-                main.style.display = 'block';
-                setTimeout(() => {
-                    main.style.opacity = '1';
-                    main.style.transform = 'scale(1)';
-                    refreshAppState();
-                }, 50);
+                intro.style.display = 'none'; main.style.display = 'block';
+                setTimeout(() => { main.style.opacity = '1'; main.style.transform = 'scale(1)'; refreshAppState(); }, 50);
             }, 800);
         }
 
         function handleNavigation() {
             if (internalState.busy) return;
-
             if (internalState.step < APP_DATA.length - 1) {
                 internalState.busy = true;
-                
-                // Transition Out
                 const currentVid = document.getElementById(`vid-${internalState.step}`);
                 currentVid.pause();
-                
-                const currentNode = document.getElementById(`step-node-${internalState.step}`);
-                currentNode.classList.remove('active');
-
+                document.getElementById(`step-node-${internalState.step}`).classList.remove('active');
                 setTimeout(() => {
                     internalState.step++;
-                    const nextNode = document.getElementById(`step-node-${internalState.step}`);
-                    nextNode.classList.add('active');
+                    document.getElementById(`step-node-${internalState.step}`).classList.add('active');
                     refreshAppState();
                     internalState.busy = false;
                 }, 400);
-            } else {
-                // Last Step Action
-                window.open('https://t.me/AppIePuy', '_blank');
-            }
+            } else { window.open('https://t.me/AppIePuy', '_blank'); }
         }
 
         function refreshAppState() {
-            // Update Bars
             APP_DATA.forEach((_, i) => {
                 const fill = document.getElementById(`fill-${i}`);
                 fill.style.width = i <= internalState.step ? '100%' : '0%';
             });
-
-            // Start Video
             const v = document.getElementById(`vid-${internalState.step}`);
             document.getElementById(`replay-${internalState.step}`).style.display = 'none';
             v.currentTime = 0;
-            v.play().catch(() => console.warn("User interaction needed for video"));
-
-            // Button Update
+            v.play().catch(e => console.log("Safari auto-play restriction"));
             const btn = document.getElementById('nav-trigger');
             if (internalState.step === APP_DATA.length - 1) {
                 btn.innerText = "ПОЛУЧИТЬ ДОСТУП";
@@ -654,29 +551,18 @@
         function forceReplay(i) {
             const v = document.getElementById(`vid-${i}`);
             document.getElementById(`replay-${i}`).style.display = 'none';
-            v.currentTime = 0;
-            v.play();
+            v.currentTime = 0; v.play();
         }
 
-        /**
-         * --------------------------------------------------------------------------
-         * BOOTSTRAP
-         * --------------------------------------------------------------------------
-         */
         window.onload = () => {
             resizeCanvas();
             renderAtmosphere();
             assembleInterface();
             updateKinetics();
-
-            // Intro delay
-            setTimeout(() => {
-                document.getElementById('entry-trigger').classList.add('active');
-            }, 3500);
+            setTimeout(() => { document.getElementById('entry-trigger').classList.add('active'); }, 2000);
         };
 
         window.onresize = resizeCanvas;
-
     </script>
 </body>
 </html>
