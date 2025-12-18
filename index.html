@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ебал я эпл пэй</title>
+    <style>
+        /* ULTIMATE CSS ARCHITECTURE 
+           Focus: Performance, iOS Native Feel, Kinetic Animations
+        */
+        :root {
+            --bg: #000000;
+            --accent: #007AFF;
+            --accent-rgb: 0, 122, 255;
+            --glass: rgba(18, 18, 20, 0.8);
+            --border: rgba(255, 255, 255, 0.12);
+            --text-primary: #ffffff;
+            --text-secondary: #86868b;
+            --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --safe-area-top: env(safe-area-inset-top);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* BACKGROUND & PARTICLES ENGINE                                             */
+        /* -------------------------------------------------------------------------- */
+        #viewport-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .cursor-light {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            mix-blend-mode: screen;
+            will-change: transform;
+            transform: translate(-50%, -50%);
+        }
+
+        .ambient-noise {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==');
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* INTRO SCENE (BRUSH ANIMATION)                                              */
+        /* -------------------------------------------------------------------------- */
+        #intro-scene {
+            position: relative;
+            z-index: 100;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 1.2s var(--easing), opacity 0.8s ease;
+        }
+
+        .emoji-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 30px;
+            perspective: 1000px;
+        }
+
+        .floating-emoji {
+            width: 100%;
+            height: 100%;
+            animation: emojiFloat 4s infinite ease-in-out;
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.5));
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(10deg); }
+            75% { transform: translateY(10px) rotate(-8deg); }
+        }
+
+        .brush-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .brush-main-text {
+            font-size: clamp(32px, 8vw, 46px);
+            font-weight: 800;
+            letter-spacing: -0.06em;
+            color: rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .brush-main-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            color: #fff;
+            clip-path: inset(0 100% 0 0);
+            animation: drawBrush 3.8s cubic-bezier(0.3, 0.1, 0.3, 1) forwards 0.5s;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        @keyframes drawBrush {
+            0% { clip-path: inset(0 100% 0 0); }
+            30% { clip-path: inset(0 60% 0 0); }
+            100% { clip-path: inset(0 0 0 0); }
+        }
+
+        .btn-entry {
+            margin-top: 60px;
+            padding: 22px 60px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 40px;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s var(--easing);
+            box-shadow: 0 20px 40px rgba(255,255,255,0.15);
+        }
+
+        .btn-entry.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .btn-entry:active {
+            transform: scale(0.92);
+            background: #e5e5e5;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* MAIN GUIDE INTERFACE                                                       */
+        /* -------------------------------------------------------------------------- */
+        #guide-interface {
+            display: none;
+            position: relative;
+            z-index: 200;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            opacity: 0;
+            transform: scale(0.85);
+            transition: all 0.9s var(--easing);
+        }
+
+        .main-card {
+            background: var(--glass);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border: 1px solid var(--border);
+            border-radius: 45px;
+            padding: 35px 25px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.7);
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        /* Step Progress */
+        .progress-engine {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 25px;
+        }
+
+        .segment {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .segment-fill {
+            position: absolute;
+            left: 0; top: 0; height: 100%;
+            width: 0%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+            transition: width 0.6s var(--easing);
+        }
+
+        /* Step Content */
+        .step-node {
+            display: none;
+        }
+
+        .step-node.active {
+            display: block;
+            animation: nodeEnter 0.7s var(--easing);
+        }
+
+        @keyframes nodeEnter {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 25px;
+            height: 45px;
+        }
+
+        /* Video System */
+        .video-container {
+            width: 100%;
+            aspect-ratio: 9/16;
+            background: #000;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 25px;
+            position: relative;
+            transform: translateZ(30px);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .replay-control {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .btn-replay {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transform: scale(0.9);
+            transition: transform 0.3s var(--easing);
+        }
+
+        .btn-replay:hover { transform: scale(1); }
+
+        /* Navigation */
+        .btn-navigation {
+            width: 100%;
+            padding: 22px;
+            border: none;
+            border-radius: 24px;
+            background: #ffffff;
+            color: #000000;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s var(--easing);
+            transform: translateZ(50px);
+        }
+
+        .btn-navigation:active {
+            transform: scale(0.95) translateZ(50px);
+            opacity: 0.9;
+        }
+
+        .guide-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-light" id="cursor-glow"></div>
+    <div class="ambient-noise"></div>
+    <canvas id="viewport-canvas"></canvas>
+
+    <div id="intro-scene">
+        <div class="emoji-wrapper">
+            <img src="https://em-content.zobj.net/source/apple/96/waving-hand-sign_1f44b.png" class="floating-emoji" alt="Wave">
+        </div>
+        <div class="brush-container">
+            <h1 class="brush-main-text" data-text="apple pay обходик">apple pay обходик</h1>
+        </div>
+        <button class="btn-entry" id="entry-trigger" onclick="initExperience()">Read</button>
+    </div>
+
+    <div id="guide-interface">
+        <div class="main-card" id="parallax-card">
+            <div class="progress-engine" id="step-indicators"></div>
+
+            <div id="nodes-container">
+                </div>
+
+            <button class="btn-navigation" id="nav-trigger" onclick="handleNavigation()">ПРОДОЛЖИТЬ</button>
+
+            <div class="guide-footer">
+                бык тубогуб тубогубенький бычок<br>
+                Support: @zarub_support_bot
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * --------------------------------------------------------------------------
+         * DATA ARCHITECTURE
+         * --------------------------------------------------------------------------
+         */
+        const CONFIG = [
+            { id: 0, title: "01. Конфигурация VPN", desc: "Активируйте VPN-туннель для корректного отображения WebApp интерфейса бота.", video: "video1.mp4" },
+            { id: 1, title: "02. Авторизация", desc: "Инициализируйте сессию в @zarub_robot и активируйте систему.", video: "video2.mp4" },
+            { id: 2, title: "03. Депозит $3", desc: "Пополните внутренний баланс на 3$ для оплаты эмиссии виртуальной карты.", video: "video3.mp4" },
+            { id: 3, title: "04. Эмиссия Карты", desc: "Выберите 'Apple Pay Virtual' и дождитесь генерации платежных реквизитов.", video: "video4.mp4" },
+            { id: 4, title: "05. Активация Лимита", desc: "Внесите 10$ на баланс самой карты внутри приложения для первой транзакции.", video: "video5.mp4" },
+            { id: 5, title: "06. Интеграция Wallet", desc: "Добавьте карту в Apple Wallet. Система готова к бесконтактной оплате.", video: "video6.mp4" }
+        ];
+
+        let state = {
+            currentStep: 0,
+            isTransitioning: false,
+            mouse: { x: window.innerWidth/2, y: window.innerHeight/2 },
+            cardRotation: { x: 0, y: 0 }
+        };
+
+        /**
+         * --------------------------------------------------------------------------
+         * CORE ENGINE: PHYSICS & PARTICLES
+         * --------------------------------------------------------------------------
+         */
+        const canvas = document.getElementById('viewport-canvas');
+        const ctx = canvas.getContext('2d');
+        let drops = [];
+
+        function initPhysics() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drops = [];
+            for(let i = 0; i < 120; i++) {
+                drops.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    speed: Math.random() * 10 + 15,
+                    length: Math.random() * 30 + 10,
+                    opacity: Math.random() * 0.15
+                });
+            }
+        }
+
+        function renderFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'round';
+            
+            drops.forEach(drop => {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${drop.opacity})`;
+                ctx.moveTo(drop.x, drop.y);
+                ctx.lineTo(drop.x, drop.y + drop.length);
+                ctx.stroke();
+                
+                drop.y += drop.speed;
+                if(drop.y > canvas.height) {
+                    drop.y = -50;
+                    drop.x = Math.random() * canvas.width;
+                }
+            });
+            requestAnimationFrame(renderFrame);
+        }
+
+        /**
+         * --------------------------------------------------------------------------
+         * UI RENDERER
+         * --------------------------------------------------------------------------
+         */
+        function buildApp() {
+            const container = document.getElementById('nodes-container');
+            const indicators = document.getElementById('step-indicators');
+
+            CONFIG.forEach((step, i) => {
+                // Render Steps
+                const node = document.createElement('div');
+                node.className = `step-node ${i === 0 ? 'active' : ''}`;
+                node.id = `node-${i}`;
+                node.innerHTML = `
+                    <h2 class="step-title">${step.title}</h2>
+                    <p class="step-description">${step.desc}</p>
+                    <div class="video-container">
+                        <video id="v-${i}" playsinline muted webkit-playsinline preload="auto">
+                            <source src="${step.video}" type="video/mp4">
+                        </video>
+                        <div class="replay-control" id="replay-${i}">
+                            <button class="btn-replay" onclick="replayNode(${i})">ПОВТОРИТЬ ВИДЕО</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(node);
+
+                // Render Indicators
+                const seg = document.createElement('div');
+                seg.className = 'segment';
+                seg.innerHTML = `<div class="segment-fill" id="fill-${i}"></div>`;
+                indicators.appendChild(seg);
+
+                // Video End Listener
+                const video = document.getElementById(`v-${i}`);
+                video.onended = () => {
+                    document.getElementById(`replay-${i}`).style.display = 'flex';
+                };
+            });
+        }
+
+        function initExperience() {
+            const intro = document.getElementById('intro-scene');
+            const ui = document.getElementById('guide-interface');
+            
+            intro.style.opacity = '0';
+            intro.style.transform = 'translateY(-50px)';
+            
+            setTimeout(() => {
+                intro.style.display = 'none';
+                ui.style.display = 'block';
+                setTimeout(() => {
+                    ui.style.opacity = '1';
+                    ui.style.transform = 'scale(1)';
+                    syncState();
+                }, 50);
+            }, 800);
+        }
+
+        function handleNavigation() {
+            if(state.isTransitioning) return;
+            
+            if(state.currentStep < CONFIG.length - 1) {
+                state.isTransitioning = true;
+                const oldVideo = document.getElementById(`v-${state.currentStep}`);
+                oldVideo.pause();
+                oldVideo.currentTime = 0;
+
+                document.getElementById(`node-${state.currentStep}`).style.opacity = '0';
+                
+                setTimeout(() => {
+                    document.getElementById(`node-${state.currentStep}`).classList.remove('active');
+                    state.currentStep++;
+                    document.getElementById(`node-${state.currentStep}`).classList.add('active');
+                    syncState();
+                    state.isTransitioning = false;
+                }, 400);
+            } else {
+                window.open('https://t.me/AppIePuy', '_blank');
+            }
+        }
+
+        function syncState() {
+            // Update Progress Bar
+            CONFIG.forEach((_, i) => {
+                const fill = document.getElementById(`fill-${i}`);
+                fill.style.width = i <= state.currentStep ? '100%' : '0%';
+            });
+
+            // Play Video
+            const activeVideo = document.getElementById(`v-${state.currentStep}`);
+            document.getElementById(`replay-${state.currentStep}`).style.display = 'none';
+            activeVideo.play().catch(() => {
+                console.warn("Autoplay blocked, waiting for interaction");
+            });
+
+            // Update Button Text
+            if(state.currentStep === CONFIG.length - 1) {
+                document.getElementById('nav-trigger').innerText = "ПЕРЕЙТИ В AASPEKT";
+                document.getElementById('nav-trigger').style.background = 'var(--accent)';
+                document.getElementById('nav-trigger').style.color = '#fff';
+            }
+        }
+
+        function replayNode(i) {
+            const v = document.getElementById(`v-${i}`);
+            document.getElementById(`replay-${i}`).style.display = 'none';
+            v.currentTime = 0;
+            v.play();
+        }
+
+        /**
+         * --------------------------------------------------------------------------
+         * INPUT & INTERACTION SYSTEM (PARALLAX)
+         * --------------------------------------------------------------------------
+         */
+        const glow = document.getElementById('cursor-glow');
+        const card = document.getElementById('parallax-card');
+
+        document.addEventListener('mousemove', (e) => {
+            state.mouse.x = e.clientX;
+            state.mouse.y = e.clientY;
+
+            // Immediate Glow Position
+            glow.style.left = `${e.clientX}px`;
+            glow.style.top = `${e.clientY}px`;
+
+            // Calculate Rotation
+            const rotX = (window.innerHeight / 2 - e.clientY) / 18;
+            const rotY = (e.clientX - window.innerWidth / 2) / 18;
+            
+            state.cardRotation.x = rotX;
+            state.cardRotation.y = rotY;
+        });
+
+        function updateKinetics() {
+            // Smooth LERP for card rotation
+            const currentRotation = card.style.transform;
+            card.style.transform = `rotateX(${state.cardRotation.x}deg) rotateY(${state.cardRotation.y}deg)`;
+            requestAnimationFrame(updateKinetics);
+        }
+
+        /**
+         * --------------------------------------------------------------------------
+         * BOOTSTRAP
+         * --------------------------------------------------------------------------
+         */
+        window.onload = () => {
+            initPhysics();
+            renderFrame();
+            buildApp();
+            updateKinetics();
+            
+            // Activation delay for intro button
+            setTimeout(() => {
+                document.getElementById('entry-trigger').classList.add('active');
+            }, 4200);
+        };
+
+        window.onresize = initPhysics;
+
+    </script>
+</body>
+</html>
